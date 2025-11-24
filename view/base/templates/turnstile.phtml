@@ -1,18 +1,50 @@
-<?php /** @var \PixelOpen\CloudflareTurnstile\Block\Turnstile $block */ ?>
-<?php /** @var \Magento\Framework\Escaper $escaper */ ?>
-<div id="<?= $escaper->escapeHtmlAttr($block->getId()) ?>" class="cloudflare-turnstile" data-bind="scope:'cloudflare-turnstile-<?= $escaper->escapeHtmlAttr($block->getId()) ?>'">
+<?php
+/**
+ * Copyright (C) 2023 Pixel Développement
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/** @var \PixelOpen\CloudflareTurnstile\Block\Turnstile $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+// Get configuration values from block
+$isEnabled = $block->isEnabled();
+$sitekey = $block->getSiteKey();
+$action = $block->getAction();
+$isFormEnabled = $block->isFormEnabled();
+$theme = $block->getThemeFromConfig();
+$size = $block->getSizeFromConfig();
+$elementId = $block->getId();
+
+// Early return if not enabled
+if (!$isEnabled || !$isFormEnabled || !$sitekey) {
+    return;
+}
+?>
+
+<div id="<?= $escaper->escapeHtmlAttr($elementId) ?>" class="cloudflare-turnstile" 
+     data-action="<?= $escaper->escapeHtmlAttr($action) ?>"
+     data-sitekey="<?= $escaper->escapeHtmlAttr($sitekey) ?>"
+     data-theme="<?= $escaper->escapeHtmlAttr($theme) ?>"
+     data-size="<?= $escaper->escapeHtmlAttr($size) ?>"
+     data-bind="scope:'cloudflare-turnstile-<?= $escaper->escapeHtmlAttr($elementId) ?>'">
     <!-- ko template: getTemplate() --><!-- /ko -->
+    <!-- Fallback container for themes without Knockout.js (e.g., Hyvä Theme) -->
+    <div id="cf-turnstile-fallback-<?= $escaper->escapeHtmlAttr($elementId) ?>" class="cf-turnstile" style="display: none;"></div>
 </div>
+
 <script type="text/x-magento-init">
 {
-    "#<?= $escaper->escapeJs($block->getId()) ?>": {
+    "#<?= $escaper->escapeJs($elementId) ?>": {
         "Magento_Ui/js/core/app": {
             "components": {
-                "cloudflare-turnstile-<?= $escaper->escapeJs($block->getId()) ?>": {
+                "cloudflare-turnstile-<?= $escaper->escapeJs($elementId) ?>": {
                     "component": "PixelOpen_CloudflareTurnstile/js/view/turnstile",
-                    "action": "<?= $escaper->escapeJs($block->getAction()) ?>",
-                    "size": "<?= $escaper->escapeJs($block->getSize()) ?>",
-                    "theme": "<?= $escaper->escapeJs($block->getTheme()) ?>",
+                    "action": "<?= $escaper->escapeJs($action) ?>",
+                    "size": "<?= $escaper->escapeJs($size) ?>",
+                    "theme": "<?= $escaper->escapeJs($theme) ?>",
                     "configSource": "turnstileConfig"
                 }
             }
@@ -20,3 +52,4 @@
     }
 }
 </script>
+

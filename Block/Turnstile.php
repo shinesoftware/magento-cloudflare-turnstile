@@ -85,4 +85,55 @@ class Turnstile extends Template
     {
         return 'cloudflare-turnstile-' . $this->filter->translitUrl($this->getAction());
     }
+
+    /**
+     * Check if Turnstile is enabled on frontend
+     *
+     * @return bool
+     */
+    public function isEnabled(): bool
+    {
+        return $this->config->isEnabledOnFront();
+    }
+
+    /**
+     * Retrieve sitekey
+     *
+     * @return string
+     */
+    public function getSiteKey(): string
+    {
+        return $this->config->getSiteKey();
+    }
+
+    /**
+     * Check if the current action/form is enabled
+     *
+     * @return bool
+     */
+    public function isFormEnabled(): bool
+    {
+        $forms = $this->config->getFrontendForms();
+        return in_array($this->getAction(), $forms);
+    }
+
+    /**
+     * Retrieve theme from config if not overridden
+     *
+     * @return string
+     */
+    public function getThemeFromConfig(): string
+    {
+        return $this->getTheme() ?: $this->config->getFrontendTheme();
+    }
+
+    /**
+     * Retrieve size from config if not overridden
+     *
+     * @return string
+     */
+    public function getSizeFromConfig(): string
+    {
+        return $this->getSize() ?: $this->config->getFrontendSize();
+    }
 }
