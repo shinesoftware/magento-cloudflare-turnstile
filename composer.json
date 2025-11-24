@@ -1,5 +1,5 @@
 {
-  "name": "pixelopen/magento-cloudflare-turnstile",
+  "name": "shinesoftware/magento-cloudflare-turnstile",
   "description": "Protect your store from spam messages and spam user accounts with Cloudflare Turnstile",
   "require": {
     "php": "^8",
