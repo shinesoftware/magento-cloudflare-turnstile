@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace PixelOpen\CloudflareTurnstile\Block;
 
 use PixelOpen\CloudflareTurnstile\Helper\Config;
+use PixelOpen\CloudflareTurnstile\Model\Config\Source\RenderingMode;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\Filter\FilterManager;
@@ -135,5 +136,35 @@ class Turnstile extends Template
     public function getSizeFromConfig(): string
     {
         return $this->getSize() ?: $this->config->getFrontendSize();
+    }
+
+    /**
+     * Retrieve configured rendering mode
+     *
+     * @return string
+     */
+    public function getRenderingMode(): string
+    {
+        return $this->config->getFrontendRenderingMode();
+    }
+
+    /**
+     * Use Knockout rendering (Luma/Blank themes)
+     *
+     * @return bool
+     */
+    public function isKnockoutRendering(): bool
+    {
+        return $this->getRenderingMode() === RenderingMode::MODE_KNOCKOUT;
+    }
+
+    /**
+     * Use Hyvä/Alpine fallback rendering
+     *
+     * @return bool
+     */
+    public function isFallbackRendering(): bool
+    {
+        return $this->getRenderingMode() === RenderingMode::MODE_FALLBACK;
     }
 }

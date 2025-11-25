@@ -4,6 +4,11 @@
     margin-top: 1rem;
 }
 
-.cloudflare-turnstile .cf-turnstile {
+.cloudflare-turnstile .cf-turnstile,
+.cloudflare-turnstile .cf-turnstile-manual {
     margin-top: 0;
+}
+
+.cf-turnstile-manual {
+    min-height: 65px;
 }

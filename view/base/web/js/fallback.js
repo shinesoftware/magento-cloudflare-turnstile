@@ -24,6 +24,12 @@
         if (!container || !fallbackContainer) {
             return;
         }
+
+        // Only initialize when the render mode explicitly requires the fallback
+        const renderMode = container.getAttribute('data-render-mode') || 'knockout';
+        if (renderMode !== 'fallback') {
+            return;
+        }
         
         // Check if Knockout.js is available
         function isKnockoutAvailable() {
@@ -69,12 +75,24 @@
             fallbackContainer.style.display = 'block';
             
             // Configuration from data attributes
-            const config = {
-                sitekey: container.getAttribute('data-sitekey'),
-                theme: container.getAttribute('data-theme') || 'auto',
-                size: container.getAttribute('data-size') || 'normal',
-                action: container.getAttribute('data-action')
+            // getAttribute returns null if attribute doesn't exist, so we need to handle that
+            const getDataAttribute = function(element, attr) {
+                const value = element.getAttribute(attr);
+                return (value !== null && value !== undefined) ? String(value) : null;
             };
+            
+            const config = {
+                sitekey: getDataAttribute(container, 'data-sitekey'),
+                theme: getDataAttribute(container, 'data-theme') || 'auto',
+                size: getDataAttribute(container, 'data-size') || 'normal',
+                action: getDataAttribute(container, 'data-action') || 'default'
+            };
+            
+            // Validate sitekey before proceeding
+        if (!config.sitekey || typeof config.sitekey !== 'string' || config.sitekey.trim() === '') {
+                fallbackContainer.innerText = 'Unable to secure the form. The site key is missing.';
+                return;
+            }
             
             // Load Cloudflare Turnstile script if not already loaded
             function loadTurnstileScript() {
@@ -97,7 +115,6 @@
                     setTimeout(function() {
                         clearInterval(checkInterval);
                         if (!window.turnstile) {
-                            console.error('Cloudflare Turnstile: Script failed to load');
                             fallbackContainer.innerText = 'Unable to load security verification. Please refresh the page.';
                         }
                     }, 10000);
@@ -114,7 +131,6 @@
                     renderWidget();
                 };
                 script.onerror = function() {
-                    console.error('Cloudflare Turnstile: Failed to load script');
                     fallbackContainer.innerText = 'Unable to load security verification. Please refresh the page.';
                 };
                 document.head.appendChild(script);
@@ -123,7 +139,6 @@
             // Render the widget
             function renderWidget() {
                 if (!window.turnstile || !window.turnstile.render) {
-                    console.error('Cloudflare Turnstile: turnstile object not available');
                     fallbackContainer.innerText = 'Unable to initialize security verification.';
                     return;
                 }
@@ -135,22 +150,28 @@
                 }
                 
                 try {
-                    const widgetId = window.turnstile.render(fallbackContainer, {
-                        sitekey: config.sitekey,
-                        theme: config.theme,
-                        size: config.size,
-                        action: config.action
-                    });
+                    // Validate and ensure all values are strings (sitekey already validated above)
+                    const renderConfig = {
+                        sitekey: String(config.sitekey).trim(),
+                        theme: String(config.theme || 'auto').trim(),
+                        size: String(config.size || 'normal').trim(),
+                        action: String(config.action || 'default').trim()
+                    };
+                    
+                    // Final validation - ensure sitekey is not empty
+                    if (!renderConfig.sitekey || renderConfig.sitekey === '') {
+                        throw new Error('Sitekey is empty or invalid');
+                    }
+                    
+                    const widgetId = window.turnstile.render(fallbackContainer, renderConfig);
                     
                     if (typeof widgetId === 'undefined') {
-                        console.error('Cloudflare Turnstile: Failed to render widget');
                         fallbackContainer.innerText = 'Unable to secure the form.';
                     } else {
                         // Store widget ID for potential reset
                         fallbackContainer.setAttribute('data-widget-id', widgetId);
                     }
                 } catch (error) {
-                    console.error('Cloudflare Turnstile: Error rendering widget', error);
                     fallbackContainer.innerText = 'Unable to secure the form.';
                 }
             }
@@ -174,7 +195,7 @@
     
     // Auto-initialize all containers with class 'cloudflare-turnstile' that have data attributes
     function autoInit() {
-        const containers = document.querySelectorAll('.cloudflare-turnstile[data-sitekey]');
+        const containers = document.querySelectorAll('.cloudflare-turnstile[data-render-mode="fallback"]');
         containers.forEach(function(container) {
             if (container.id) {
                 initFallback(container.id);

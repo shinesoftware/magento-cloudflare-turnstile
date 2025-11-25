@@ -17,6 +17,9 @@ $isFormEnabled = $block->isFormEnabled();
 $theme = $block->getThemeFromConfig();
 $size = $block->getSizeFromConfig();
 $elementId = $block->getId();
+$renderingMode = $block->getRenderingMode();
+$isKnockout = $block->isKnockoutRendering();
+$isFallback = $block->isFallbackRendering();
 
 // Early return if not enabled
 if (!$isEnabled || !$isFormEnabled || !$sitekey) {
@@ -29,27 +32,37 @@ if (!$isEnabled || !$isFormEnabled || !$sitekey) {
      data-sitekey="<?= $escaper->escapeHtmlAttr($sitekey) ?>"
      data-theme="<?= $escaper->escapeHtmlAttr($theme) ?>"
      data-size="<?= $escaper->escapeHtmlAttr($size) ?>"
-     data-bind="scope:'cloudflare-turnstile-<?= $escaper->escapeHtmlAttr($elementId) ?>'">
-    <!-- ko template: getTemplate() --><!-- /ko -->
-    <!-- Fallback container for themes without Knockout.js (e.g., Hyvä Theme) -->
-    <div id="cf-turnstile-fallback-<?= $escaper->escapeHtmlAttr($elementId) ?>" class="cf-turnstile" style="display: none;"></div>
+     data-render-mode="<?= $escaper->escapeHtmlAttr($renderingMode) ?>"
+     <?php if ($isKnockout): ?>
+     data-bind="scope:'cloudflare-turnstile-<?= $escaper->escapeHtmlAttr($elementId) ?>'"
+     <?php endif; ?>
+>
+    <?php if ($isKnockout): ?>
+        <!-- ko template: getTemplate() --><!-- /ko -->
+    <?php endif; ?>
+    <?php if ($isFallback): ?>
+        <!-- Fallback container for themes without Knockout.js (e.g., Hyvä Theme) -->
+        <div id="cf-turnstile-fallback-<?= $escaper->escapeHtmlAttr($elementId) ?>" class="cf-turnstile-manual" style="display: none;"></div>
+    <?php endif; ?>
 </div>
 
-<script type="text/x-magento-init">
-{
-    "#<?= $escaper->escapeJs($elementId) ?>": {
-        "Magento_Ui/js/core/app": {
-            "components": {
-                "cloudflare-turnstile-<?= $escaper->escapeJs($elementId) ?>": {
-                    "component": "PixelOpen_CloudflareTurnstile/js/view/turnstile",
-                    "action": "<?= $escaper->escapeJs($action) ?>",
-                    "size": "<?= $escaper->escapeJs($size) ?>",
-                    "theme": "<?= $escaper->escapeJs($theme) ?>",
-                    "configSource": "turnstileConfig"
+<?php if ($isKnockout): ?>
+    <script type="text/x-magento-init">
+    {
+        "#<?= $escaper->escapeJs($elementId) ?>": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "cloudflare-turnstile-<?= $escaper->escapeJs($elementId) ?>": {
+                        "component": "PixelOpen_CloudflareTurnstile/js/view/turnstile",
+                        "action": "<?= $escaper->escapeJs($action) ?>",
+                        "size": "<?= $escaper->escapeJs($size) ?>",
+                        "theme": "<?= $escaper->escapeJs($theme) ?>",
+                        "configSource": "turnstileConfig"
+                    }
                 }
             }
         }
     }
-}
-</script>
+    </script>
+<?php endif; ?>
 
