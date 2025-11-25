@@ -93,7 +93,7 @@ define(
              * @returns {*}
              */
             getValue: function (value) {
-                if (ko && ko.isObservable(value)) {
+                if (ko?.isObservable(value)) {
                     return ko.unwrap(value);
                 }
                 return value;
