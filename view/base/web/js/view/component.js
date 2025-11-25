@@ -75,14 +75,15 @@ define(
                 // Extract sitekey value from observable if needed
                 const sitekey = this.getValue(this.config.sitekey);
                 
-                if (!sitekey) {
-                    this.element.innerText = $.mage.__('Unable to secure the form. The site key is missing.');
-                } else {
+                if (sitekey) {
                     this.beforeRender();
                     if (this.autoRendering) {
                         this.render();
                     }
+                    return;
                 }
+
+                this.element.innerText = $.mage.__('Unable to secure the form. The site key is missing.');
             },
 
             /**
@@ -92,7 +93,7 @@ define(
              * @returns {*}
              */
             getValue: function (value) {
-                if (typeof ko !== 'undefined' && ko.isObservable(value)) {
+                if (ko && ko.isObservable(value)) {
                     return ko.unwrap(value);
                 }
                 return value;
